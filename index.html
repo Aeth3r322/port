@@ -1,0 +1,201 @@
+index.html
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>///</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #000000;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            overflow-x: hidden;
+            font-family: "Courier New", monospace;
+            padding: 24px;
+        }
+
+        /* Главная сцена */
+        .stage {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 36px;
+            width: 100%;
+            max-width: 1300px;
+        }
+
+        /* Видео по центру */
+        .video-box {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .video-box video {
+            width: 560px;
+            max-width: 85vw;
+            height: auto;
+            border: 1px solid #1a1a1a;
+            display: block;
+        }
+
+        /* Карточки мемов */
+        .side-meme {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.9;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .side-meme:hover {
+            opacity: 1;
+            transform: scale(1.04);
+        }
+
+        .side-meme img {
+            width: 220px;
+            height: auto;
+            max-height: 280px;
+            object-fit: cover;
+            border: 1px solid #1a1a1a;
+            background-color: #050505;
+            display: block;
+        }
+
+        /* Адаптив под мобилку */
+        @media (max-width: 850px) {
+            .stage {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .video-box video {
+                width: 90vw;
+            }
+
+            .side-meme img {
+                width: 130px;
+                max-height: 160px;
+            }
+        }
+
+        /* Счетчик посетителей */
+        .counter-container {
+            margin-top: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #666666;
+            font-size: 13px;
+            letter-spacing: 3px;
+        }
+
+        .odometer {
+            background-color: #080808;
+            color: #ff2222;
+            padding: 6px 14px;
+            border: 1px solid #222222;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 5px;
+            text-shadow: 0 0 8px rgba(255, 34, 34, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stage">
+        <!-- Левый мем -->
+        <div class="side-meme">
+            <img src="chudjak.jpg" alt="">
+        </div>
+
+        <!-- Центр: видео -->
+        <div class="video-box">
+            <video autoplay loop muted playsinline>
+                <source src="wendigo.mp4" type="video/mp4">
+            </video>
+        </div>
+
+        <!-- Правый мем -->
+        <div class="side-meme">
+            <img src="meme2.jpg" alt="">
+        </div>
+    </div>
+
+    <!-- Счетчик -->
+    <div class="counter-container">
+        <span>VISITORS</span>
+        <div class="odometer" id="visit-count">000000</div>
+    </div>
+
+    <script>
+        const styleRed = "color: #ff1c1c; font-family: monospace; font-size: 11px; line-height: 11px; font-weight: bold; background: #000000;";
+        const styleWhite = "color: #ffffff; font-family: monospace; font-size: 11px; line-height: 11px; font-weight: bold; background: #000000;";
+
+        const artHeader = `%c                        P             N                     
+                      994           F NW                    
+                     VIDE          RE  IL                   
+   E            Y F  LET  B       OW   F                    
+  1D            T E    P  JEKT R  G D          A            
+ UTI            G G.   HE  OMPAN  B AT         A            
+  N        G     REL  E  NT  POLISH,FC LA O R  N W          
+ IN        O     GLBAL BALDUR'S G GA S. CD P OR KT          
+   R        B    R'S GATE: DARK ALLIANCE1 HEN  NT           
+     FI     A DIFFI1ULTIES. THE GAME WAS  AN  LL            
+    D C ED   REUSE THE CODE FOR THEIR OW  V D  G            
+E    WT .ER, A VIDEO GAME BASED  N T E WORKS   F            
+E     RETURN NULLLARGEST [] L[0]FOR EACH ITEM IN L          
+M     LARGEST, THENLARGEST [] ITEMRETURN LARGEST            
+      T  WITCHER WILD HUNT[A] IS A 2015 ACTION R            
+P     2  IDEO   M DEVELOPED AND PUBLI     BY C              
+K       ED O  HE W  CHER S RIES OF FA     NOVE              
+       HOR ANDR   O   SKI, IT IS THE  O   O THE             
+       ITCHER AS ASSIN OF KINGS. P        N OPE             
+        A TH   F  RSO E   PECTIVE, PLAYERS CONTR L          
+      IS GERALT OF RIVIA, A MONSTER HUNTER KNOWN A          
+       H     S LOOKING FOR HIS MISSIN    TED D A GG         
+       RO  TH     HUNT:L N OTH  RWORLD LY F RC11            
+         A        AND USES %cER P ERS. PL YE   B2%c           
+             A    RS WITH WEAPONS %cAND M    INTE;%c          
+                   CTERS, AND %cCOMPL TEM A%c                 
+                 %cIRE EX               S AN%c                
+               %cE GERALT'  B         U  CHASES%c             
+%c                     VER   ENDINGS, DET F                 
+                     NTS IN TH    AME GWE                   
+                        POLISH: GWINT: W                    
+                           G FREE-TO                        
+                             DEVEL                          `;
+
+        console.log(
+            artHeader,
+            styleRed, styleWhite, styleRed,
+            styleWhite, styleRed,
+            styleWhite, styleRed,
+            styleWhite, styleRed,
+            styleWhite, styleRed,
+            styleRed
+        );
+
+        const baseOffset = 1337;
+        let visits = localStorage.getItem('site_visits');
+        visits = visits ? parseInt(visits) + 1 : baseOffset;
+        localStorage.setItem('site_visits', visits);
+        document.getElementById('visit-count').innerText = String(visits).padStart(6, '0');
+    </script>
+</body>
+</html>
