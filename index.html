@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>///</title>
-    <!-- Официальный скрипт Telegram WebApp -->
+    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -109,9 +109,8 @@
             text-shadow: 0 0 8px rgba(255, 34, 34, 0.4);
         }
 
-        /* 3. Личная предложка (Ask/Inbox) */
         .inbox-card {
-            margin-top: 28px;
+            margin-top: 24px;
             width: 100%;
             max-width: 440px;
             display: flex;
@@ -122,10 +121,10 @@
 
         .inbox-textarea {
             width: 100%;
-            height: 64px;
+            height: 60px;
             background: #080808;
             border: 1px solid #222222;
-            color: #d1d1d1;
+            color: #ffffff;
             font-family: "Courier New", monospace;
             font-size: 12px;
             padding: 8px 12px;
@@ -146,7 +145,7 @@
             font-family: "Courier New", monospace;
             font-size: 11px;
             letter-spacing: 2px;
-            padding: 8px;
+            padding: 10px;
             cursor: pointer;
             transition: all 0.2s;
             text-transform: uppercase;
@@ -156,89 +155,120 @@
             background: #ff2222;
             color: #000;
         }
+
+        #status-bar {
+            color: #777;
+            font-size: 10px;
+            letter-spacing: 1px;
+            min-height: 14px;
+        }
     </style>
 </head>
 <body>
 
     <div class="stage">
-        <!-- Левый мем (с виброоткликом) -->
-        <div class="side-meme" onclick="vibrate('heavy')">
+        <!-- Левый мем с двойным триггером вибрации -->
+        <div class="side-meme" onclick="handleTap('heavy')">
             <img src="chudjak.jpg" alt="">
         </div>
 
-        <!-- Центр: видео -->
-        <div class="video-box" onclick="vibrate('medium')">
+        <div class="video-box" onclick="handleTap('medium')">
             <video autoplay loop muted playsinline>
                 <source src="wendigo.mp4" type="video/mp4">
             </video>
         </div>
 
-        <!-- Правый мем -->
-        <div class="side-meme" onclick="vibrate('heavy')">
+        <div class="side-meme" onclick="handleTap('heavy')">
             <img src="meme2.jpg" alt="">
         </div>
     </div>
 
-    <!-- Счетчик -->
     <div class="counter-container">
         <span>VISITORS</span>
         <div class="odometer" id="visit-count">000000</div>
     </div>
 
-    <!-- 3. Форма анонимного сообщения -->
+    <!-- Форма отправки сообщений -->
     <div class="inbox-card">
         <textarea id="msg-input" class="inbox-textarea" placeholder="leave an anonymous transmission..."></textarea>
         <button id="send-btn" class="inbox-btn" onclick="sendMessage()">[ TRANSMIT ]</button>
+        <div id="status-bar"></div>
     </div>
 
     <script>
-        // === ВСТАВЬ СВОИ ДАННЫЕ СЮДА ===
-        const BOT_TOKEN = "8718527580:AAEuGSCNHVH33Yrqo_HXdJku7_AFbBci-rQ";
+        // ==========================================
+        // ОБЯЗАТЕЛЬНО ВСТАВЬ СВОИ ДАННЫЕ В КАВЫЧКИ:
+        const BOT_TOKEN = "8718527580:AAEuGSCNHVH33Yrqo_HXdJku7_AFbBci-rQ"; 
         const MY_CHAT_ID = "652140635";
+        // ==========================================
 
         const tg = window.Telegram?.WebApp;
         if (tg) {
-            tg.ready();
-            tg.expand();
+            try {
+                tg.ready();
+                tg.expand();
+            } catch (e) {}
         }
 
-        // 2. Тактильная отдача (Haptics)
-        function vibrate(type = 'medium') {
+        // Универсальная вибрация (TG API + HTML5 Vibration API)
+        function handleTap(intensity = 'medium') {
+            // 1. Пытаемся дёрнуть вибромотор через WebApp
             if (tg?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred(type);
+                try {
+                    tg.HapticFeedback.impactOccurred(intensity);
+                } catch (e) {}
+            }
+            // 2. Запасной нативный вибромотор Android/iOS браузеров
+            if (navigator.vibrate) {
+                navigator.vibrate(intensity === 'heavy' ? 45 : 25);
             }
         }
 
         // Отправка сообщений в Telegram через Bot API
         async function notifyTelegram(text) {
-            if (!BOT_TOKEN || BOT_TOKEN === "YOUR_BOT_TOKEN_HERE") return;
-            try {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        chat_id: MY_CHAT_ID,
-                        text: text,
-                        parse_mode: 'HTML'
-                    })
-                });
-            } catch (e) {
-                console.error("TG API error", e);
+            if (!BOT_TOKEN || BOT_TOKEN === "YOUR_BOT_TOKEN_HERE") {
+                throw new Error("ТОКЕН_НЕ_УКАЗАН");
             }
+            if (!MY_CHAT_ID || MY_CHAT_ID === "YOUR_PERSONAL_CHAT_ID_HERE") {
+                throw new Error("CHAT_ID_НЕ_УКАЗАН");
+            }
+
+            const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    chat_id: MY_CHAT_ID,
+                    text: text,
+                    parse_mode: 'HTML'
+                })
+            });
+
+            const data = await response.json();
+            if (!data.ok) {
+                if (data.description.includes("chat not found") || data.description.includes("bot can't initiate")) {
+                    throw new Error("НАЖМИ_/START_В_БОТЕ");
+                }
+                throw new Error(data.description);
+            }
+            return data;
         }
 
-        // 1. Беспалевный логгер гостей
-        function logGuest() {
+        // 1. Логгер гостей
+        async function logGuest() {
             const user = tg?.initDataUnsafe?.user;
             const sessionLogged = sessionStorage.getItem('guest_logged');
 
             if (user && !sessionLogged) {
                 const guestTag = user.username ? `@${user.username}` : "без ника";
                 const guestName = [user.first_name, user.last_name].filter(Boolean).join(" ");
-                const logText = `👁 <b>НОВЫЙ ГОСТЬ НА ПОРТАЛЕ</b>\nИмя: ${guestName}\nЮзер: ${guestTag}\nID: <code>${user.id}</code>\nЯзык: ${user.language_code || 'неизвестен'}`;
-                
-                notifyTelegram(logText);
-                sessionStorage.setItem('guest_logged', '1');
+                const logText = `👁 <b>ГОСТЬ НА ПОРТАЛЕ</b>\nИмя: ${guestName}\nНик: ${guestTag}\nID: <code>${user.id}</code>`;
+
+                try {
+                    await notifyTelegram(logText);
+                    sessionStorage.setItem('guest_logged', '1');
+                } catch (e) {
+                    console.log("Logger notice:", e.message);
+                }
             }
         }
         logGuest();
@@ -247,83 +277,61 @@
         async function sendMessage() {
             const input = document.getElementById('msg-input');
             const btn = document.getElementById('send-btn');
+            const status = document.getElementById('status-bar');
             const message = input.value.trim();
 
             if (!message) {
-                vibrate('error');
+                handleTap('heavy');
+                status.innerText = ">> ВВЕДИ ТЕКСТ";
+                status.style.color = "#ff4444";
                 return;
             }
 
-            vibrate('heavy');
+            handleTap('medium');
             btn.disabled = true;
             btn.innerText = "[ TRANSMITTING... ]";
+            status.innerText = ">> ОТПРАВКА...";
+            status.style.color = "#888";
 
             const user = tg?.initDataUnsafe?.user;
-            const sender = user ? `@${user.username || user.first_name}` : "Аноним из веба";
-            const payload = `✉️️ <b>НОВОЕ СООБЩЕНИЕ ИЗ ПОРТАЛА:</b>\n\n«${message}»\n\n<i>От: ${sender}</i>`;
+            const sender = user ? `@${user.username || user.first_name} (ID: ${user.id})` : "Аноним из браузера";
+            const payload = `✉ <b>СООБЩЕНИЕ ИЗ ПОРТАЛА:</b>\n\n«${message}»\n\n<i>Отправитель: ${sender}</i>`;
 
-            await notifyTelegram(payload);
+            try {
+                await notifyTelegram(payload);
 
-            if (tg?.HapticFeedback) {
-                tg.HapticFeedback.notificationOccurred('success');
-            }
+                if (tg?.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                }
+                if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
 
-            input.value = "";
-            btn.innerText = "[ TRANSMITTED ]";
-            setTimeout(() => {
+                input.value = "";
+                btn.innerText = "[ TRANSMITTED ]";
+                status.innerText = ">> УСПЕШНО ДОСТАВЛЕНО";
+                status.style.color = "#22ff66";
+
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerText = "[ TRANSMIT ]";
+                    status.innerText = "";
+                }, 3000);
+
+            } catch (err) {
                 btn.disabled = false;
                 btn.innerText = "[ TRANSMIT ]";
-            }, 3000);
+                status.style.color = "#ff2222";
+                
+                if (err.message === "ТОКЕН_НЕ_УКАЗАН" || err.message === "CHAT_ID_НЕ_УКАЗАН") {
+                    status.innerText = ">> ОШИБКА: НЕ ВПИСАН ТОКЕН ИЛИ ID В КОДЕ";
+                } else if (err.message === "НАЖМИ_/START_В_БОТЕ") {
+                    status.innerText = ">> ОШИБКА: ЗАЙДИ В БОТА И НАЖМИ /START";
+                } else {
+                    status.innerText = ">> ОШИБКА: " + err.message;
+                }
+            }
         }
 
-        // Консоль и одометр
-        const styleRed = "color: #ff1c1c; font-family: monospace; font-size: 11px; line-height: 11px; font-weight: bold; background: #000000;";
-        const styleWhite = "color: #ffffff; font-family: monospace; font-size: 11px; line-height: 11px; font-weight: bold; background: #000000;";
-
-        const artHeader = `%c                        P             N                     
-                      994           F NW                    
-                     VIDE          RE  IL                   
-   E            Y F  LET  B       OW   F                    
-  1D            T E    P  JEKT R  G D          A            
- UTI            G G.   HE  OMPAN  B AT         A            
-  N        G     REL  E  NT  POLISH,FC LA O R  N W          
- IN        O     GLBAL BALDUR'S G GA S. CD P OR KT          
-   R        B    R'S GATE: DARK ALLIANCE1 HEN  NT           
-     FI     A DIFFI1ULTIES. THE GAME WAS  AN  LL            
-    D C ED   REUSE THE CODE FOR THEIR OW  V D  G            
-E    WT .ER, A VIDEO GAME BASED  N T E WORKS   F            
-E     RETURN NULLLARGEST [] L[0]FOR EACH ITEM IN L          
-M     LARGEST, THENLARGEST [] ITEMRETURN LARGEST            
-      T  WITCHER WILD HUNT[A] IS A 2015 ACTION R            
-P     2  IDEO   M DEVELOPED AND PUBLI     BY C              
-K       ED O  HE W  CHER S RIES OF FA     NOVE              
-       HOR ANDR   O   SKI, IT IS THE  O   O THE             
-       ITCHER AS ASSIN OF KINGS. P        N OPE             
-        A TH   F  RSO E   PECTIVE, PLAYERS CONTR L          
-      IS GERALT OF RIVIA, A MONSTER HUNTER KNOWN A          
-       H     S LOOKING FOR HIS MISSIN    TED D A GG         
-       RO  TH     HUNT:L N OTH  RWORLD LY F RC11            
-         A        AND USES %cER P ERS. PL YE   B2%c           
-             A    RS WITH WEAPONS %cAND M    INTE;%c          
-                   CTERS, AND %cCOMPL TEM A%c                 
-                 %cIRE EX               S AN%c                
-               %cE GERALT'  B         U  CHASES%c             
-%c                     VER   ENDINGS, DET F                 
-                     NTS IN TH    AME GWE                   
-                        POLISH: GWINT: W                    
-                           G FREE-TO                        
-                             DEVEL                          `;
-
-        console.log(
-            artHeader,
-            styleRed, styleWhite, styleRed,
-            styleWhite, styleRed,
-            styleWhite, styleRed,
-            styleWhite, styleRed,
-            styleWhite, styleRed,
-            styleRed
-        );
-
+        // Одометр
         const baseOffset = 1337;
         let visits = localStorage.getItem('site_visits');
         visits = visits ? parseInt(visits) + 1 : baseOffset;
