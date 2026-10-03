@@ -1,11 +1,11 @@
-index.html
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>///</title>
+    <!-- Официальный скрипт Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -24,63 +24,58 @@ index.html
             flex-direction: column;
             overflow-x: hidden;
             font-family: "Courier New", monospace;
-            padding: 24px;
+            padding: 20px 10px;
         }
 
-        /* Главная сцена */
         .stage {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 36px;
+            gap: 24px;
             width: 100%;
-            max-width: 1300px;
+            max-width: 1200px;
         }
 
-        /* Видео по центру */
         .video-box {
             flex-shrink: 0;
-            display: flex;
-            justify-content: center;
+            cursor: pointer;
         }
 
         .video-box video {
-            width: 560px;
-            max-width: 85vw;
+            width: 520px;
+            max-width: 88vw;
             height: auto;
             border: 1px solid #1a1a1a;
             display: block;
         }
 
-        /* Карточки мемов */
         .side-meme {
             display: flex;
             flex-direction: column;
             align-items: center;
             opacity: 0.9;
-            transition: transform 0.2s, opacity 0.2s;
+            transition: transform 0.15s, opacity 0.15s;
+            cursor: pointer;
         }
 
-        .side-meme:hover {
-            opacity: 1;
-            transform: scale(1.04);
+        .side-meme:active {
+            transform: scale(0.95);
         }
 
         .side-meme img {
-            width: 220px;
+            width: 200px;
             height: auto;
-            max-height: 280px;
+            max-height: 260px;
             object-fit: cover;
             border: 1px solid #1a1a1a;
             background-color: #050505;
             display: block;
         }
 
-        /* Адаптив под мобилку */
         @media (max-width: 850px) {
             .stage {
                 flex-direction: column;
-                gap: 20px;
+                gap: 16px;
             }
 
             .video-box video {
@@ -93,46 +88,93 @@ index.html
             }
         }
 
-        /* Счетчик посетителей */
         .counter-container {
-            margin-top: 32px;
+            margin-top: 24px;
             display: flex;
             align-items: center;
             gap: 12px;
-            color: #666666;
-            font-size: 13px;
-            letter-spacing: 3px;
+            color: #555555;
+            font-size: 12px;
+            letter-spacing: 2px;
         }
 
         .odometer {
             background-color: #080808;
             color: #ff2222;
-            padding: 6px 14px;
+            padding: 5px 12px;
             border: 1px solid #222222;
             font-weight: bold;
-            font-size: 14px;
-            letter-spacing: 5px;
-            text-shadow: 0 0 8px rgba(255, 34, 34, 0.5);
+            font-size: 13px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 8px rgba(255, 34, 34, 0.4);
+        }
+
+        /* 3. Личная предложка (Ask/Inbox) */
+        .inbox-card {
+            margin-top: 28px;
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .inbox-textarea {
+            width: 100%;
+            height: 64px;
+            background: #080808;
+            border: 1px solid #222222;
+            color: #d1d1d1;
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+            padding: 8px 12px;
+            outline: none;
+            resize: none;
+            user-select: text;
+        }
+
+        .inbox-textarea:focus {
+            border-color: #ff2222;
+        }
+
+        .inbox-btn {
+            width: 100%;
+            background: #0d0d0d;
+            border: 1px solid #2a2a2a;
+            color: #ff3333;
+            font-family: "Courier New", monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .inbox-btn:active {
+            background: #ff2222;
+            color: #000;
         }
     </style>
 </head>
 <body>
 
     <div class="stage">
-        <!-- Левый мем -->
-        <div class="side-meme">
+        <!-- Левый мем (с виброоткликом) -->
+        <div class="side-meme" onclick="vibrate('heavy')">
             <img src="chudjak.jpg" alt="">
         </div>
 
         <!-- Центр: видео -->
-        <div class="video-box">
+        <div class="video-box" onclick="vibrate('medium')">
             <video autoplay loop muted playsinline>
                 <source src="wendigo.mp4" type="video/mp4">
             </video>
         </div>
 
         <!-- Правый мем -->
-        <div class="side-meme">
+        <div class="side-meme" onclick="vibrate('heavy')">
             <img src="meme2.jpg" alt="">
         </div>
     </div>
@@ -143,7 +185,98 @@ index.html
         <div class="odometer" id="visit-count">000000</div>
     </div>
 
+    <!-- 3. Форма анонимного сообщения -->
+    <div class="inbox-card">
+        <textarea id="msg-input" class="inbox-textarea" placeholder="leave an anonymous transmission..."></textarea>
+        <button id="send-btn" class="inbox-btn" onclick="sendMessage()">[ TRANSMIT ]</button>
+    </div>
+
     <script>
+        // === ВСТАВЬ СВОИ ДАННЫЕ СЮДА ===
+        const BOT_TOKEN = "8718527580:AAEuGSCNHVH33Yrqo_HXdJku7_AFbBci-rQ";
+        const MY_CHAT_ID = "652140635";
+
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        // 2. Тактильная отдача (Haptics)
+        function vibrate(type = 'medium') {
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred(type);
+            }
+        }
+
+        // Отправка сообщений в Telegram через Bot API
+        async function notifyTelegram(text) {
+            if (!BOT_TOKEN || BOT_TOKEN === "YOUR_BOT_TOKEN_HERE") return;
+            try {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        chat_id: MY_CHAT_ID,
+                        text: text,
+                        parse_mode: 'HTML'
+                    })
+                });
+            } catch (e) {
+                console.error("TG API error", e);
+            }
+        }
+
+        // 1. Беспалевный логгер гостей
+        function logGuest() {
+            const user = tg?.initDataUnsafe?.user;
+            const sessionLogged = sessionStorage.getItem('guest_logged');
+
+            if (user && !sessionLogged) {
+                const guestTag = user.username ? `@${user.username}` : "без ника";
+                const guestName = [user.first_name, user.last_name].filter(Boolean).join(" ");
+                const logText = `👁 <b>НОВЫЙ ГОСТЬ НА ПОРТАЛЕ</b>\nИмя: ${guestName}\nЮзер: ${guestTag}\nID: <code>${user.id}</code>\nЯзык: ${user.language_code || 'неизвестен'}`;
+                
+                notifyTelegram(logText);
+                sessionStorage.setItem('guest_logged', '1');
+            }
+        }
+        logGuest();
+
+        // 3. Отправка анонимного сообщения
+        async function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const btn = document.getElementById('send-btn');
+            const message = input.value.trim();
+
+            if (!message) {
+                vibrate('error');
+                return;
+            }
+
+            vibrate('heavy');
+            btn.disabled = true;
+            btn.innerText = "[ TRANSMITTING... ]";
+
+            const user = tg?.initDataUnsafe?.user;
+            const sender = user ? `@${user.username || user.first_name}` : "Аноним из веба";
+            const payload = `✉️️ <b>НОВОЕ СООБЩЕНИЕ ИЗ ПОРТАЛА:</b>\n\n«${message}»\n\n<i>От: ${sender}</i>`;
+
+            await notifyTelegram(payload);
+
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+
+            input.value = "";
+            btn.innerText = "[ TRANSMITTED ]";
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerText = "[ TRANSMIT ]";
+            }, 3000);
+        }
+
+        // Консоль и одометр
         const styleRed = "color: #ff1c1c; font-family: monospace; font-size: 11px; line-height: 11px; font-weight: bold; background: #000000;";
         const styleWhite = "color: #ffffff; font-family: monospace; font-size: 11px; line-height: 11px; font-weight: bold; background: #000000;";
 
