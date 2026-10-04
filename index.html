@@ -26,16 +26,17 @@
             padding: 24px 10px;
         }
 
-        /* === SKYRIM STEALTH HUD === */
+        /* === ТОЧНЫЙ HUD ИЗ SKYRIM === */
         .skyrim-hud {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 0.6s ease, transform 0.6s ease;
+            transform: scale(0.95);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            cursor: pointer;
         }
 
         .skyrim-hud.visible {
@@ -44,8 +45,8 @@
         }
 
         .skyrim-eye-box {
-            width: 96px;
-            height: 38px;
+            width: 110px;
+            height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -57,62 +58,69 @@
             overflow: visible;
         }
 
-        .eye-lid-top, .eye-lid-bottom {
+        /* Верхнее и нижнее веко: в скрытности сжаты в ровную щель */
+        .lid-top, .lid-bottom {
             fill: none;
-            stroke: #b5ad9e;
-            stroke-width: 2.2;
+            stroke: #777777;
+            stroke-width: 2.8;
             stroke-linecap: round;
-            transform-origin: 50px 19px;
-            transform: scaleY(0.12); /* Изначально веки закрыты в горизонтальную щель */
-            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3));
+            transform-origin: 50px 22px;
+            transform: scaleY(0.06);
             transition: transform 0.65s cubic-bezier(0.2, 0.9, 0.3, 1.2), stroke 0.4s ease;
         }
 
-        .eye-pupil {
-            fill: #f5f0e6;
-            transform-origin: 50px 19px;
-            transform: scaleY(0.08); /* Зрачок спрятан */
-            opacity: 0.2;
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+        /* Радужка (кольцо) и точка (зрачок) */
+        .iris-group {
+            transform-origin: 50px 22px;
+            transform: scale(0.2);
+            opacity: 0;
             transition: transform 0.65s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.4s ease;
         }
 
-        /* Состояние обнаружения */
-        .skyrim-hud.detected .eye-lid-top {
-            transform: scaleY(1);
-            stroke: #ffffff;
-            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+        .eye-iris {
+            fill: none;
+            stroke: #b5b5b5;
+            stroke-width: 2.8;
         }
 
-        .skyrim-hud.detected .eye-lid-bottom {
-            transform: scaleY(1);
-            stroke: #ffffff;
-            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+        .eye-pupil-dot {
+            fill: #b5b5b5;
         }
 
-        .skyrim-hud.detected .eye-pupil {
+        /* Состояние: ВАС ЗАМЕТИЛИ */
+        .skyrim-hud.detected .lid-top {
             transform: scaleY(1);
+            stroke: #b5b5b5;
+        }
+
+        .skyrim-hud.detected .lid-bottom {
+            transform: scaleY(1);
+            stroke: #b5b5b5;
+        }
+
+        .skyrim-hud.detected .iris-group {
+            transform: scale(1);
             opacity: 1;
-            filter: drop-shadow(0 0 9px rgba(255, 255, 255, 1));
         }
 
+        /* Текст HUD в стиле русской локализации Skyrim */
         .skyrim-text {
-            margin-top: 8px;
-            font-family: "Georgia", "Cinzel", "Times New Roman", serif;
-            font-size: 13px;
-            letter-spacing: 5px;
-            color: #9c9484;
+            margin-top: 6px;
+            font-family: "Arial Narrow", "Futura Condensed", "Franklin Gothic Medium", sans-serif-condensed, sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #777777;
             text-transform: uppercase;
-            text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
-            transition: color 0.4s ease, text-shadow 0.4s ease;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95);
+            transition: color 0.4s ease;
         }
 
         .skyrim-hud.detected .skyrim-text {
-            color: #ffffff;
-            text-shadow: 0 0 12px rgba(255, 255, 255, 0.9), 0 0 22px rgba(255, 255, 255, 0.4);
+            color: #b5b5b5;
         }
 
-        /* === КОНТЕНТ === */
+        /* === ОСНОВНОЙ ПОРТАЛ === */
         .stage {
             display: flex;
             align-items: center;
@@ -253,12 +261,29 @@
 <body>
 
     <!-- HUD ИЗ СКАЙРИМА -->
-    <div class="skyrim-hud" id="skyrim-hud">
+    <div class="skyrim-hud" id="skyrim-hud" onclick="replayStealth()">
         <div class="skyrim-eye-box">
-            <svg class="skyrim-eye-svg" viewBox="0 0 100 38">
-                <path class="eye-lid-top" d="M 6 19 Q 50 -2 94 19" />
-                <ellipse class="eye-pupil" cx="50" cy="19" rx="6.5" ry="12" />
-                <path class="eye-lid-bottom" d="M 6 19 Q 50 40 94 19" />
+            <svg class="skyrim-eye-svg" viewBox="0 0 100 44">
+                <defs>
+                    <!-- Маска по контуру века: зрачок не выйдет за пределы ни при каких условиях -->
+                    <clipPath id="skyrim-clip">
+                        <path d="M 6 22 C 28 2, 72 2, 94 22 C 72 42, 28 42, 6 22 Z" />
+                    </clipPath>
+                </defs>
+
+                <!-- Внутренняя радужка и точка под защитой clip-path -->
+                <g clip-path="url(#skyrim-clip)">
+                    <g class="iris-group">
+                        <!-- Кольцо радужки -->
+                        <circle class="eye-iris" cx="50" cy="22" r="11.5" />
+                        <!-- Центральная точка зрачка -->
+                        <circle class="eye-pupil-dot" cx="50" cy="22" r="2.2" />
+                    </g>
+                </g>
+
+                <!-- Контуры век с правильным изгибом из игры -->
+                <path class="lid-top" d="M 6 22 C 28 2, 72 2, 94 22" />
+                <path class="lid-bottom" d="M 6 22 C 28 42, 72 42, 94 22" />
             </svg>
         </div>
         <div class="skyrim-text" id="skyrim-text">СКРЫТНОСТЬ</div>
@@ -292,7 +317,7 @@
     </div>
 
     <script>
-        // ВСТАВЬ ССЫЛКУ НА СВОЙ CLOUDFLARE WORKER:
+        // ТВОЙ CLOUDFLARE WORKER:
         const WORKER_URL = "https://tg-notify.pryanik848.workers.dev";
 
         const tg = window.Telegram?.WebApp;
@@ -312,13 +337,13 @@
             }
         }
 
-        // Запуск Скайрим-анимации
-        function triggerSkyrimEye() {
+        // Анимация глаза Скайрима
+        function runStealthDetection() {
             const hud = document.getElementById('skyrim-hud');
             const label = document.getElementById('skyrim-text');
             if (!hud || !label) return;
 
-            // 1. Появляется щель "СКРЫТНОСТЬ"
+            // 1. Появляется закрытая щель
             setTimeout(() => {
                 hud.classList.add('visible');
             }, 250);
@@ -328,14 +353,29 @@
                 hud.classList.add('detected');
                 label.innerText = "ВАС ЗАМЕТИЛИ";
                 handleTap('heavy');
-            }, 1400);
+            }, 1300);
         }
 
-        // Бронебойный вызов без зависаний
+        function replayStealth() {
+            const hud = document.getElementById('skyrim-hud');
+            const label = document.getElementById('skyrim-text');
+            if (!hud || !label) return;
+
+            hud.classList.remove('detected');
+            label.innerText = "СКРЫТНОСТЬ";
+            handleTap('medium');
+
+            setTimeout(() => {
+                hud.classList.add('detected');
+                label.innerText = "ВАС ЗАМЕТИЛИ";
+                handleTap('heavy');
+            }, 900);
+        }
+
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', triggerSkyrimEye);
+            document.addEventListener('DOMContentLoaded', runStealthDetection);
         } else {
-            triggerSkyrimEye();
+            runStealthDetection();
         }
 
         async function sendToWorker(payload) {
