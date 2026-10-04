@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>///</title>
-    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -194,8 +193,10 @@
     </div>
 
     <script>
-        const BOT_TOKEN = "8718527580:AAEuGSCNHVH33Yrqo_HXdJku7_AFbBci-rQ"; 
-        const MY_CHAT_ID = "652140635";
+        // ====================================================
+        // ВСТАВЬ СЮДА ССЫЛКУ НА СВОЙ CLOUDFLARE WORKER:
+        const WORKER_URL = "https://tg-notify.pryanik848.workers.dev/";
+        // ====================================================
 
         const tg = window.Telegram?.WebApp;
         if (tg) {
@@ -207,33 +208,29 @@
 
         function handleTap(intensity = 'medium') {
             if (tg?.HapticFeedback) {
-                try {
-                    tg.HapticFeedback.impactOccurred(intensity);
-                } catch (e) {}
+                try { tg.HapticFeedback.impactOccurred(intensity); } catch (e) {}
             }
             if (navigator.vibrate) {
-                try {
-                    navigator.vibrate(intensity === 'heavy' ? 50 : 25);
-                } catch (e) {}
+                try { navigator.vibrate(intensity === 'heavy' ? 45 : 20); } catch (e) {}
             }
         }
 
-        // Бронебойная отправка: GET + no-cors обходит любые запреты браузера
-        function sendToTelegram(text) {
-            return new Promise((resolve) => {
-                const encodedText = encodeURIComponent(text);
-                const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${MY_CHAT_ID}&text=${encodedText}&parse_mode=HTML`;
-                
-                // Шлем через fetch в режиме no-cors
-                fetch(url, { mode: 'no-cors' })
-                    .then(() => resolve(true))
-                    .catch(() => {
-                        // Резервный канал через Image пинг (работает даже если fetch заблокирован адблоком)
-                        const ping = new Image();
-                        ping.src = url;
-                        resolve(true);
-                    });
+        async function sendViaWorker(text) {
+            if (!WORKER_URL || WORKER_URL.includes("ТВОЙ-ВОРКЕР")) {
+                throw new Error("УКАЖИ_URL_ВОРКЕРА");
+            }
+
+            const res = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
             });
+
+            const data = await res.json();
+            if (!res.ok || data.ok === false) {
+                throw new Error(data.description || data.error || "Ошибка запроса");
+            }
+            return data;
         }
 
         // 1. Логгер гостей
@@ -246,8 +243,12 @@
                 const guestName = [user.first_name, user.last_name].filter(Boolean).join(" ");
                 const logText = `👁 <b>ГОСТЬ НА ПОРТАЛЕ</b>\nИмя: ${guestName}\nНик: ${guestTag}\nID: <code>${user.id}</code>`;
 
-                await sendToTelegram(logText);
-                sessionStorage.setItem('guest_logged', '1');
+                try {
+                    await sendViaWorker(logText);
+                    sessionStorage.setItem('guest_logged', '1');
+                } catch (e) {
+                    console.log("Logger error:", e.message);
+                }
             }
         }
         logGuest();
@@ -273,28 +274,33 @@
             status.style.color = "#888";
 
             const user = tg?.initDataUnsafe?.user;
-            const sender = user ? `@${user.username || user.first_name} (ID: ${user.id})` : "Аноним";
+            const sender = user ? `@${user.username || user.first_name} (ID: ${user.id})` : "Аноним из веба";
             const payload = `✉ <b>СООБЩЕНИЕ ИЗ ПОРТАЛА:</b>\n\n«${message}»\n\n<i>От: ${sender}</i>`;
 
-            await sendToTelegram(payload);
+            try {
+                await sendViaWorker(payload);
 
-            if (tg?.HapticFeedback) {
-                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
-            }
-            if (navigator.vibrate) {
-                try { navigator.vibrate([30, 50, 30]); } catch(e) {}
-            }
+                if (tg?.HapticFeedback) {
+                    try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+                }
 
-            input.value = "";
-            btn.innerText = "[ TRANSMITTED ]";
-            status.innerText = ">> УСПЕШНО ДОСТАВЛЕНО";
-            status.style.color = "#22ff66";
+                input.value = "";
+                btn.innerText = "[ TRANSMITTED ]";
+                status.innerText = ">> УСПЕШНО ДОСТАВЛЕНО";
+                status.style.color = "#22ff66";
 
-            setTimeout(() => {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerText = "[ TRANSMIT ]";
+                    status.innerText = "";
+                }, 3000);
+
+            } catch (err) {
                 btn.disabled = false;
                 btn.innerText = "[ TRANSMIT ]";
-                status.innerText = "";
-            }, 3000);
+                status.style.color = "#ff2222";
+                status.innerText = ">> ОШИБКА: " + err.message;
+            }
         }
 
         // Одометр
