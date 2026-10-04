@@ -193,10 +193,8 @@
     </div>
 
     <script>
-        // ====================================================
-        // ВСТАВЬ СЮДА ССЫЛКУ НА СВОЙ CLOUDFLARE WORKER:
-        const WORKER_URL = "https://tg-notify.pryanik848.workers.dev/";
-        // ====================================================
+        // ТВОЙ CLOUDFLARE WORKER
+        const WORKER_URL = "https://tg-notify.pryanik848.workers.dev/; // проверь свой url!
 
         const tg = window.Telegram?.WebApp;
         if (tg) {
@@ -215,45 +213,39 @@
             }
         }
 
-        async function sendViaWorker(text) {
-            if (!WORKER_URL || WORKER_URL.includes("ТВОЙ-ВОРКЕР")) {
-                throw new Error("УКАЖИ_URL_ВОРКЕРА");
-            }
-
+        // Универсальная отправка на воркер
+        async function sendToWorker(payload) {
             const res = await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: text })
+                body: JSON.stringify(payload)
             });
-
             const data = await res.json();
             if (!res.ok || data.ok === false) {
-                throw new Error(data.description || data.error || "Ошибка запроса");
+                throw new Error(data.description || data.error || "Ошибка сети");
             }
             return data;
         }
 
-        // 1. Логгер гостей
+        // 1. Автоматический логгер при входе
         async function logGuest() {
-            const user = tg?.initDataUnsafe?.user;
-            const sessionLogged = sessionStorage.getItem('guest_logged');
+            const sessionLogged = sessionStorage.getItem('logged_visit');
+            if (sessionLogged) return;
 
-            if (user && !sessionLogged) {
-                const guestTag = user.username ? `@${user.username}` : "без ника";
-                const guestName = [user.first_name, user.last_name].filter(Boolean).join(" ");
-                const logText = `👁 <b>ГОСТЬ НА ПОРТАЛЕ</b>\nИмя: ${guestName}\nНик: ${guestTag}\nID: <code>${user.id}</code>`;
-
-                try {
-                    await sendViaWorker(logText);
-                    sessionStorage.setItem('guest_logged', '1');
-                } catch (e) {
-                    console.log("Logger error:", e.message);
-                }
+            const user = tg?.initDataUnsafe?.user || null;
+            try {
+                await sendToWorker({
+                    type: 'visit',
+                    tg_user: user
+                });
+                sessionStorage.setItem('logged_visit', '1');
+            } catch (e) {
+                console.log("Visit log error:", e);
             }
         }
         logGuest();
 
-        // 3. Отправка сообщений
+        // 3. Отправка сообщения
         async function sendMessage() {
             const input = document.getElementById('msg-input');
             const btn = document.getElementById('send-btn');
@@ -273,12 +265,14 @@
             status.innerText = ">> ОТПРАВКА...";
             status.style.color = "#888";
 
-            const user = tg?.initDataUnsafe?.user;
-            const sender = user ? `@${user.username || user.first_name} (ID: ${user.id})` : "Аноним из веба";
-            const payload = `✉ <b>СООБЩЕНИЕ ИЗ ПОРТАЛА:</b>\n\n«${message}»\n\n<i>От: ${sender}</i>`;
+            const user = tg?.initDataUnsafe?.user || null;
 
             try {
-                await sendViaWorker(payload);
+                await sendToWorker({
+                    type: 'message',
+                    text: message,
+                    tg_user: user
+                });
 
                 if (tg?.HapticFeedback) {
                     try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
@@ -310,5 +304,3 @@
         localStorage.setItem('site_visits', visits);
         document.getElementById('visit-count').innerText = String(visits).padStart(6, '0');
     </script>
-</body>
-</html>
