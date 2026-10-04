@@ -192,9 +192,9 @@
         <div id="status-bar"></div>
     </div>
 
-    <script>
-        // ТВОЙ CLOUDFLARE WORKER
-        const WORKER_URL = "https://tg-notify.pryanik848.workers.dev/; // проверь свой url!
+   <script>
+        // ВСТАВЬ СВОЙ URL ВОРКЕРА:
+        const WORKER_URL = "https://tg-notify.pryanik848.workers.dev/";
 
         const tg = window.Telegram?.WebApp;
         if (tg) {
@@ -213,7 +213,6 @@
             }
         }
 
-        // Универсальная отправка на воркер
         async function sendToWorker(payload) {
             const res = await fetch(WORKER_URL, {
                 method: 'POST',
@@ -227,10 +226,10 @@
             return data;
         }
 
-        // 1. Автоматический логгер при входе
-        async function logGuest() {
-            const sessionLogged = sessionStorage.getItem('logged_visit');
-            if (sessionLogged) return;
+        // ШАГ 1: Автоматический лог входа при открытии страницы
+        async function logVisit() {
+            const alreadyLogged = sessionStorage.getItem('logged_entry');
+            if (alreadyLogged) return;
 
             const user = tg?.initDataUnsafe?.user || null;
             try {
@@ -238,14 +237,14 @@
                     type: 'visit',
                     tg_user: user
                 });
-                sessionStorage.setItem('logged_visit', '1');
+                sessionStorage.setItem('logged_entry', '1');
             } catch (e) {
                 console.log("Visit log error:", e);
             }
         }
-        logGuest();
+        logVisit();
 
-        // 3. Отправка сообщения
+        // ШАГ 2: Отправка сообщения по кнопке TRANSMIT
         async function sendMessage() {
             const input = document.getElementById('msg-input');
             const btn = document.getElementById('send-btn');
