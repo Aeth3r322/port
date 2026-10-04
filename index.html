@@ -467,6 +467,38 @@
         visits = visits ? parseInt(visits) + 1 : baseOffset;
         localStorage.setItem('site_visits', visits);
         document.getElementById('visit-count').innerText = String(visits).padStart(6, '0');
+
+        
+        // === CYBERPUNK 2077 // DEVTOOLS GRAPHICAL INJECTION ===
+        const samuraiBanner = [
+            '%c ',
+            '%c[ NETWATCH BREACH PROTOCOL // TRACE COMPLETED ]\n[ TARGET IDENTIFIED // LOG TRANSMITTED TO CENTRAL NODE ]'
+        ].join('\n\n');
+
+        // Стили для рендеринга изображения в консоли
+        const styleSamurai = [
+            'font-size: 1px;',
+            'padding: 180px 150px;',
+            'line-height: 0;',
+            'background: url("./samurai.png") no-repeat center / contain;',
+            'background-color: #000000;',
+            'display: block;'
+        ].join(' ');
+
+        // Стиль для красного терминального предупреждения
+        const styleNetwatch = [
+            'color: #ff003c;',
+            'font-family: monospace;',
+            'font-size: 12px;',
+            'font-weight: 900;',
+            'letter-spacing: 1px;',
+            'background: #000000;',
+            'text-shadow: 0 0 8px #ff003c;',
+            'padding: 6px 12px;',
+            'border-left: 3px solid #ff003c;'
+        ].join(' ');
+
+        console.log(samuraiBanner, styleSamurai, styleNetwatch);
     </script>
 </body>
 </html>
