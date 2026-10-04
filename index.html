@@ -6,6 +6,87 @@
     <title>///</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Скайрим HUD — Индикатор скрытности */
+.skyrim-hud {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.skyrim-hud.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.skyrim-eye-box {
+    width: 90px;
+    height: 38px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.skyrim-eye-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Линии век */
+.eye-lid {
+    fill: none;
+    stroke: #d0c8b8;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+    transition: all 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* Зрачок, который расширяется при обнаружении */
+.eye-pupil {
+    fill: #f0ebe0;
+    transform-origin: center;
+    transform: scaleY(0.05); /* изначально закрыт в щель */
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+    transition: transform 0.7s cubic-bezier(0.3, 1.4, 0.4, 1);
+}
+
+/* Состояние: ВАС ЗАМЕТИЛИ */
+.skyrim-hud.detected .eye-pupil {
+    transform: scaleY(1); /* зрачок распахнут */
+}
+
+.skyrim-hud.detected .eye-lid.top {
+    d: path("M 4 19 Q 45 -4 86 19");
+}
+
+.skyrim-hud.detected .eye-lid.bottom {
+    d: path("M 4 19 Q 45 42 86 19");
+}
+
+/* Аутентичный нордический шрифт */
+.skyrim-text {
+    margin-top: 6px;
+    font-family: "Cinzel", "Georgia", "Trajan Pro", serif;
+    font-size: 13px;
+    letter-spacing: 5px;
+    color: #e2dbcd;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(0, 0, 0, 0.9);
+    user-select: none;
+    transition: color 0.5s ease, text-shadow 0.5s ease;
+}
+
+.skyrim-hud.detected .skyrim-text {
+    color: #ffffff;
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.9), 0 0 24px rgba(255, 40, 40, 0.6);
+}
         * {
             margin: 0;
             padding: 0;
@@ -25,7 +106,20 @@
             font-family: "Courier New", monospace;
             padding: 20px 10px;
         }
-
+<!-- ИНДИКАТОР СКРЫТНОСТИ ИЗ SKYRIM -->
+<div class="skyrim-hud" id="skyrim-hud">
+    <div class="skyrim-eye-box">
+        <svg class="skyrim-eye-svg" viewBox="0 0 90 38">
+            <!-- Верхнее веко -->
+            <path class="eye-lid top" d="M 4 19 Q 45 10 86 19" />
+            <!-- Зрачок -->
+            <ellipse class="eye-pupil" cx="45" cy="19" rx="6.5" ry="13" />
+            <!-- Нижнее веко -->
+            <path class="eye-lid bottom" d="M 4 19 Q 45 28 86 19" />
+        </svg>
+    </div>
+    <div class="skyrim-text" id="skyrim-text">СКРЫТНОСТЬ</div>
+</div>
         .stage {
             display: flex;
             align-items: center;
@@ -302,4 +396,23 @@
         visits = visits ? parseInt(visits) + 1 : baseOffset;
         localStorage.setItem('site_visits', visits);
         document.getElementById('visit-count').innerText = String(visits).padStart(6, '0');
+       // Анимация «ВАС ЗАМЕТИЛИ»
+window.addEventListener('DOMContentLoaded', () => {
+    const hud = document.getElementById('skyrim-hud');
+    const label = document.getElementById('skyrim-text');
+
+    // 1. Через 0.4 сек HUD плавно проявляется на экране (веко прищурено)
+    setTimeout(() => {
+        hud.classList.add('active');
+    }, 400);
+
+    // 2. Ровно через 1.5 секунды глаз распахивается, текст меняется и бьёт вибро
+    setTimeout(() => {
+        hud.classList.add('detected');
+        label.innerText = "ВАС ЗАМЕТИЛИ";
+        
+        // Тактильный удар прямо под открытие глаза
+        handleTap('heavy');
+    }, 1500);
+});
     </script>
