@@ -14,7 +14,7 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-
+<script src="./samurai_console.js"></script>
         body {
             min-height: 100vh;
             display: flex;
@@ -476,14 +476,15 @@
         ].join('\n\n');
 
         // Стили для рендеринга изображения в консоли
-        const styleSamurai = [
-            'font-size: 1px;',
-            'padding: 180px 150px;',
-            'line-height: 0;',
-            'background: url("./samurai.png") no-repeat center / contain;',
-            'background-color: #000000;',
-            'display: block;'
-        ].join(' ');
+       // Замените url("./samurai.png") на data URI:
+const styleSamurai = [
+    'font-size: 1px;',
+    'padding: 180px 150px;',
+    'line-height: 0;',
+    'background: url("data:image/png;base64,ВСТАВИТЬ_СЮДА_BASE64_КОД") no-repeat center / contain;',
+    'background-color: #000000;',
+    'display: block;'
+].join(' ');
 
         // Стиль для красного терминального предупреждения
         const styleNetwatch = [
