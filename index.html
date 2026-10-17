@@ -322,28 +322,7 @@
 <body>
 
     <div class="main-wrapper">
-        <!-- HUD ИЗ СКАЙРИМА (ТОЛЬКО ОРИГИНАЛЬНЫЙ ТЕКСТ) -->
-        <div class="skyrim-hud" id="skyrim-hud" onclick="replayStealth()">
-            <div class="skyrim-eye-box">
-                <svg class="skyrim-eye-svg" viewBox="0 0 100 44">
-                    <defs>
-                        <clipPath id="skyrim-clip">
-                            <path d="M 6 22 C 28 2, 72 2, 94 22 C 72 42, 28 42, 6 22 Z" />
-                        </clipPath>
-                    </defs>
-                    <g clip-path="url(#skyrim-clip)">
-                        <g class="iris-group">
-                            <circle class="eye-iris" cx="50" cy="22" r="11.5" />
-                            <circle class="eye-pupil-dot" cx="50" cy="22" r="2.2" />
-                        </g>
-                    </g>
-                    <path class="lid-top" d="M 6 22 C 28 2, 72 2, 94 22" />
-                    <path class="lid-bottom" d="M 6 22 C 28 42, 72 42, 94 22" />
-                </svg>
-            </div>
-            <div class="skyrim-text" id="skyrim-text">СКРЫТНОСТЬ</div>
-        </div>
-
+       
         <!-- МЕДИА-СЦЕНА -->
         <div class="stage">
             <div class="side-meme" onclick="handleTap('heavy')">
@@ -496,47 +475,7 @@
 
         updateSliderUI(parseInt(volumeSlider.value), true);
 
-        // === HUD SKYRIM ===
-        function runStealthDetection() {
-            var hud = document.getElementById('skyrim-hud');
-            var label = document.getElementById('skyrim-text');
-            if (!hud || !label) return;
-
-            setTimeout(function() {
-                hud.classList.add('visible');
-            }, 250);
-
-            setTimeout(function() {
-                hud.classList.add('detected');
-                label.innerText = "ВАС ЗАМЕТИЛИ";
-                if (tgApp && tgApp.HapticFeedback) {
-                    try { tgApp.HapticFeedback.impactOccurred('heavy'); } catch(e) {}
-                }
-            }, 1300);
-        }
-
-        function replayStealth() {
-            var hud = document.getElementById('skyrim-hud');
-            var label = document.getElementById('skyrim-text');
-            if (!hud || !label) return;
-
-            hud.classList.remove('detected');
-            label.innerText = "СКРЫТНОСТЬ";
-            handleTap('medium');
-
-            setTimeout(function() {
-                hud.classList.add('detected');
-                label.innerText = "ВАС ЗАМЕТИЛИ";
-                handleTap('heavy');
-            }, 900);
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', runStealthDetection);
-        } else {
-            runStealthDetection();
-        }
-
+    
         // === ОТПРАВКА СООБЩЕНИЙ ===
         function sendToWorker(payload) {
             return fetch(WORKER_URL, {
