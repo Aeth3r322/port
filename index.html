@@ -48,25 +48,28 @@
             max-width: 86vw;
             text-align: center;
             font-family: Arial, Helvetica, sans-serif;
-            font-size: clamp(22px, 6.2vw, 36px);
+            font-size: clamp(22px, 6.2vw, 35px);
             font-weight: 900;
             color: #000000;
             text-transform: lowercase;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
             line-height: 1.1;
-            /* Плотная красная подушка свечения под черными буквами */
+            white-space: nowrap;
+            /* Статичное плотное красное свечение вокруг черного текста */
             text-shadow: 
-                0 0 2px #ff0000,
-                0 0 4px #ff0000,
-                0 0 6px #ff0000,
-                0 0 10px #ff1111,
-                0 0 14px #ff1111,
-                0 0 20px #ff0000,
-                0 0 28px #ff0000;
+                -1px -1px 0 #ff0000,
+                 1px -1px 0 #ff0000,
+                -1px  1px 0 #ff0000,
+                 1px  1px 0 #ff0000,
+                 0 0 4px #ff0000,
+                 0 0 8px #ff0000,
+                 0 0 12px #ff1111,
+                 0 0 18px #ff0000,
+                 0 0 26px #ff0000;
         }
 
-        /* === ЦЕНТРАЛЬНАЯ МЕДИА-СЦЕНА === */
+        /* === ЦЕНТРАЛЬНАЯ МЕДИА-СЦЕНА (БЕЗ СЕРЫХ ПОЛОСОК И КАРТИНОК) === */
         .stage {
             display: flex;
             align-items: center;
@@ -129,7 +132,7 @@
             text-shadow: 0 0 8px rgba(255, 34, 34, 0.4);
         }
 
-        /* === БЛОК ОТПРАВКИ (СТРОГО АНОНИМНЫЙ) === */
+        /* === БЛОК ОТПРАВКИ === */
         .inbox-card {
             margin-top: 22px;
             width: 100%;
@@ -251,4 +254,302 @@
             appearance: none;
             width: 110px;
             height: 4px;
-            border-radius:
+            border-radius: 2px;
+            background: #252525;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: 2px solid #000000;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+            transition: transform 0.15s, background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #ff3333;
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.8);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: 2px solid #000000;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+            transition: transform 0.15s, background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .volume-slider::-moz-range-thumb:hover {
+            transform: scale(1.25);
+            background: #ff3333;
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.8);
+        }
+
+        .sound-hud-panel.is-active-sound .volume-slider::-webkit-slider-thumb {
+            background: #ff3333;
+            box-shadow: 0 0 8px rgba(255, 51, 51, 0.7);
+        }
+
+        .volume-val-label {
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #666666;
+            min-width: 36px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .sound-hud-panel.is-active-sound .volume-val-label {
+            color: #ff3333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <!-- НАДПИСЬ НАД КЛИПОМ -->
+        <div class="top-brand-label">chubzikпацык.xyz</div>
+
+        <!-- МЕДИА-СЦЕНА -->
+        <div class="stage">
+            <div class="video-box" id="video-container" onclick="handleVideoClick()">
+                <video id="main-video" autoplay loop muted playsinline preload="metadata">
+                    <source src="wendigo.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+
+        <!-- СЧЕТЧИК ПОСЕТИТЕЛЕЙ -->
+        <div class="counter-container">
+            <span>VISITORS</span>
+            <div class="odometer" id="visit-count">000000</div>
+        </div>
+
+        <!-- ПОЛЕ ОТПРАВКИ -->
+        <div class="inbox-card">
+            <textarea id="msg-input" class="inbox-textarea" placeholder="leave an anonymous transmission..."></textarea>
+            <button id="send-btn" class="inbox-btn" onclick="sendMessage()">[ TRANSMIT ]</button>
+            <div id="status-bar"></div>
+        </div>
+    </div>
+
+    <!-- СТАТИЧНАЯ ПАНЕЛЬ ЗВУКА СНИЗУ -->
+    <div class="sound-hud-panel" id="sound-panel">
+        <button class="sound-btn-toggle" id="sound-toggle-btn" onclick="toggleMute()" title="Вкл / Выкл звук">
+            <span id="sound-icon">🔇</span>
+        </button>
+
+        <div class="volume-slider-box">
+            <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="80">
+            <span class="volume-val-label" id="volume-val">80%</span>
+        </div>
+    </div>
+
+    <audio id="separate-audio" loop src=""></audio>
+
+    <script>
+        var tgApp = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+        if (tgApp) {
+            try {
+                tgApp.ready();
+                tgApp.expand();
+            } catch (e) {}
+        }
+
+        var WORKER_URL = "https://tg-notify.pryanik848.workers.dev/";
+
+        function handleTap(intensity) {
+            intensity = intensity || 'medium';
+            if (tgApp && tgApp.HapticFeedback) {
+                try { tgApp.HapticFeedback.impactOccurred(intensity); } catch (e) {}
+            }
+            if (navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive) {
+                try { navigator.vibrate(intensity === 'heavy' ? 45 : 20); } catch (e) {}
+            }
+        }
+
+        function getTgUser() {
+            var user = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe ? window.Telegram.WebApp.initDataUnsafe.user : null;
+            if (user) {
+                return {
+                    id: user.id,
+                    username: user.username ? "@" + user.username : null,
+                    first_name: user.first_name || "",
+                    last_name: user.last_name || "",
+                    name: ((user.first_name || "") + " " + (user.last_name || "")).trim()
+                };
+            }
+            return null;
+        }
+
+        // === УПРАВЛЕНИЕ ЗВУКОМ ===
+        var mainVideo = document.getElementById('main-video');
+        var soundPanel = document.getElementById('sound-panel');
+        var soundIcon = document.getElementById('sound-icon');
+        var volumeSlider = document.getElementById('volume-slider');
+        var volumeVal = document.getElementById('volume-val');
+        var separateAudio = document.getElementById('separate-audio');
+
+        function updateSliderUI(volPercent, isMuted) {
+            volumeVal.textContent = isMuted ? "0%" : volPercent + "%";
+
+            if (isMuted || volPercent === 0) {
+                soundIcon.textContent = '🔇';
+                soundPanel.classList.remove('is-active-sound');
+                volumeSlider.style.background = '#252525';
+            } else {
+                soundIcon.textContent = volPercent > 50 ? '🔊' : '🔉';
+                soundPanel.classList.add('is-active-sound');
+                volumeSlider.style.background = 'linear-gradient(to right, #ff2222 ' + volPercent + '%, #252525 ' + volPercent + '%)';
+            }
+        }
+
+        function setVolume(volPercent) {
+            var vol = volPercent / 100;
+            if (mainVideo) mainVideo.volume = vol;
+            if (separateAudio && separateAudio.getAttribute('src')) separateAudio.volume = vol;
+
+            if (volPercent > 0) {
+                if (mainVideo && mainVideo.muted) {
+                    mainVideo.muted = false;
+                    mainVideo.play().catch(function() {});
+                }
+                updateSliderUI(volPercent, false);
+            } else {
+                if (mainVideo) mainVideo.muted = true;
+                updateSliderUI(0, true);
+            }
+        }
+
+        function toggleMute() {
+            handleTap('medium');
+            var hasSeparateAudio = separateAudio && separateAudio.getAttribute('src');
+
+            if (mainVideo) {
+                if (mainVideo.muted || volumeSlider.value == 0) {
+                    mainVideo.muted = false;
+                    var targetVal = parseInt(volumeSlider.value);
+                    if (targetVal === 0) targetVal = 80;
+                    volumeSlider.value = targetVal;
+                    setVolume(targetVal);
+                    if (hasSeparateAudio) separateAudio.play().catch(function() {});
+                } else {
+                    mainVideo.muted = true;
+                    if (hasSeparateAudio) separateAudio.pause();
+                    updateSliderUI(parseInt(volumeSlider.value), true);
+                }
+            }
+        }
+
+        volumeSlider.addEventListener('input', function(e) {
+            var val = parseInt(e.target.value);
+            setVolume(val);
+        });
+
+        function handleVideoClick() {
+            toggleMute();
+        }
+
+        updateSliderUI(parseInt(volumeSlider.value), true);
+
+        // === ОТПРАВКА СООБЩЕНИЙ ===
+        function sendToWorker(payload) {
+            return fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(function(res) {
+                return res.json().then(function(data) {
+                    if (!res.ok || data.ok === false) {
+                        throw new Error(data.description || data.error || "Ошибка сети");
+                    }
+                    return data;
+                });
+            });
+        }
+
+        function logVisit() {
+            var alreadyLogged = sessionStorage.getItem('logged_entry');
+            if (alreadyLogged) return;
+
+            var user = getTgUser();
+            sendToWorker({
+                type: 'visit',
+                tg_user: user
+            }).then(function() {
+                sessionStorage.setItem('logged_entry', '1');
+            }).catch(function(e) {
+                console.log("Visit error:", e);
+            });
+        }
+        logVisit();
+
+        function sendMessage() {
+            var input = document.getElementById('msg-input');
+            var btn = document.getElementById('send-btn');
+            var status = document.getElementById('status-bar');
+            var message = input.value.trim();
+
+            if (!message) {
+                handleTap('heavy');
+                status.innerText = ">> ВВЕДИ ТЕКСТ";
+                status.style.color = "#ff4444";
+                return;
+            }
+
+            handleTap('medium');
+            btn.disabled = true;
+            btn.innerText = "[ TRANSMITTING... ]";
+            status.innerText = ">> ОТПРАВКА...";
+            status.style.color = "#888";
+
+            var user = getTgUser();
+
+            sendToWorker({
+                type: 'message',
+                text: message,
+                tg_user: user
+            }).then(function() {
+                if (tgApp && tgApp.HapticFeedback) {
+                    try { tgApp.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+                }
+
+                input.value = "";
+                btn.innerText = "[ TRANSMITTED ]";
+                status.innerText = ">> УСПЕШНО ДОСТАВЛЕНО";
+                status.style.color = "#22ff66";
+
+                setTimeout(function() {
+                    btn.disabled = false;
+                    btn.innerText = "[ TRANSMIT ]";
+                    status.innerText = "";
+                }, 3000);
+            }).catch(function(err) {
+                btn.disabled = false;
+                btn.innerText = "[ TRANSMIT ]";
+                status.style.color = "#ff2222";
+                status.innerText = ">> ОШИБКА: " + err.message;
+            });
+        }
+
+        // Одометр
+        var baseOffset = 1337;
+        var visits = localStorage.getItem('site_visits');
+        visits = visits ? parseInt(visits) + 1 : baseOffset;
+        localStorage.setItem('site_visits', visits);
+        document.getElementById('visit-count').innerText = String(visits).padStart(6, '0');
+    </script>
+</body>
+</html>
