@@ -42,34 +42,46 @@
             margin: 0 auto;
         }
 
-        /* === ЧЕРНАЯ НАДПИСЬ СО СТАТИЧНЫМ СИНИМ СВЕЧЕНИЕМ ПОД КЛИП === */
+        /* === ЧЕРНАЯ НАДПИСЬ СО СТАТИЧНЫМ КРАСНЫМ СВЕЧЕНИЕМ НА ВСЮ ШИРИНУ КЛИПА === */
         .top-brand-label {
             width: 500px;
             max-width: 86vw;
             text-align: center;
             font-family: Arial, Helvetica, sans-serif;
+            font-size: clamp(22px, 6.2vw, 36px);
             font-size: clamp(22px, 6.2vw, 35px);
             font-weight: 900;
             color: #000000;
             text-transform: lowercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
             letter-spacing: 1.5px;
             margin-bottom: 12px;
             line-height: 1.1;
+            /* Плотная красная подушка свечения под черными буквами */
             white-space: nowrap;
-            /* Плотное сине-голубое свечение один в один как на клипе */
+            /* Статичное плотное красное свечение вокруг черного текста */
             text-shadow: 
-                -1px -1px 0 #70d6ff,
-                 1px -1px 0 #70d6ff,
-                -1px  1px 0 #70d6ff,
-                 1px  1px 0 #70d6ff,
-                 0 0 4px #70d6ff,
-                 0 0 8px #3399ff,
-                 0 0 12px #0066ff,
-                 0 0 18px #0044ff,
-                 0 0 26px #0022aa;
+                0 0 2px #ff0000,
+                0 0 4px #ff0000,
+                0 0 6px #ff0000,
+                0 0 10px #ff1111,
+                0 0 14px #ff1111,
+                0 0 20px #ff0000,
+                0 0 28px #ff0000;
+                -1px -1px 0 #ff0000,
+                 1px -1px 0 #ff0000,
+                -1px  1px 0 #ff0000,
+                 1px  1px 0 #ff0000,
+                 0 0 4px #ff0000,
+                 0 0 8px #ff0000,
+                 0 0 12px #ff1111,
+                 0 0 18px #ff0000,
+                 0 0 26px #ff0000;
         }
 
         /* === ЦЕНТРАЛЬНАЯ МЕДИА-СЦЕНА === */
+        /* === ЦЕНТРАЛЬНАЯ МЕДИА-СЦЕНА (БЕЗ СЕРЫХ ПОЛОСОК И КАРТИНОК) === */
         .stage {
             display: flex;
             align-items: center;
@@ -87,15 +99,14 @@
             width: 500px;
             max-width: 86vw;
             height: auto;
-            border: 1px solid #1a1a3a;
+            border: 1px solid #1a1a1a;
             display: block;
             background: #000;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .video-box:hover video {
-            border-color: #3b44cc;
-            box-shadow: 0 0 14px rgba(51, 136, 255, 0.25);
+            border-color: #333333;
         }
 
         @media (max-width: 850px) {
@@ -117,22 +128,23 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            color: #4a5a80;
+            color: #555555;
             font-size: 12px;
             letter-spacing: 2px;
         }
 
         .odometer {
-            background-color: #050711;
-            color: #4da6ff;
+            background-color: #080808;
+            color: #ff2222;
             padding: 5px 12px;
-            border: 1px solid #162244;
+            border: 1px solid #222222;
             font-weight: bold;
             font-size: 13px;
             letter-spacing: 4px;
-            text-shadow: 0 0 8px rgba(77, 166, 255, 0.5);
+            text-shadow: 0 0 8px rgba(255, 34, 34, 0.4);
         }
 
+        /* === БЛОК ОТПРАВКИ (СТРОГО АНОНИМНЫЙ) === */
         /* === БЛОК ОТПРАВКИ === */
         .inbox-card {
             margin-top: 22px;
@@ -147,32 +159,26 @@
         .inbox-textarea {
             width: 100%;
             height: 60px;
-            background: #05070e;
-            border: 1px solid #18223c;
-            color: #e6f2ff;
+            background: #080808;
+            border: 1px solid #222222;
+            color: #ffffff;
             font-family: "Courier New", monospace;
             font-size: 12px;
             padding: 8px 12px;
             outline: none;
             resize: none;
             user-select: text;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .inbox-textarea::placeholder {
-            color: #3b4d71;
         }
 
         .inbox-textarea:focus {
-            border-color: #3388ff;
-            box-shadow: 0 0 10px rgba(51, 136, 255, 0.2);
+            border-color: #ff2222;
         }
 
         .inbox-btn {
             width: 100%;
-            background: #070a14;
-            border: 1px solid #1c2b4d;
-            color: #4da6ff;
+            background: #0d0d0d;
+            border: 1px solid #2a2a2a;
+            color: #ff3333;
             font-family: "Courier New", monospace;
             font-size: 11px;
             letter-spacing: 2px;
@@ -180,22 +186,15 @@
             cursor: pointer;
             transition: all 0.2s;
             text-transform: uppercase;
-            text-shadow: 0 0 6px rgba(77, 166, 255, 0.35);
-        }
-
-        .inbox-btn:hover {
-            border-color: #3388ff;
-            color: #80bfff;
         }
 
         .inbox-btn:active {
-            background: #3388ff;
-            color: #000000;
-            text-shadow: none;
+            background: #ff2222;
+            color: #000;
         }
 
         #status-bar {
-            color: #5577aa;
+            color: #777;
             font-size: 10px;
             letter-spacing: 1px;
             min-height: 14px;
@@ -214,25 +213,25 @@
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            background: rgba(6, 9, 18, 0.94);
+            background: rgba(10, 10, 10, 0.94);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid #1a2540;
+            border: 1px solid #262626;
             padding: 8px 18px;
             border-radius: 999px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), 0 0 1px rgba(100, 180, 255, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), 0 0 1px rgba(255, 255, 255, 0.15);
             transition: border-color 0.25s, box-shadow 0.25s;
         }
 
         .sound-hud-panel.is-active-sound {
-            border-color: #1f4488;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), 0 0 18px rgba(51, 136, 255, 0.24);
+            border-color: #441111;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), 0 0 18px rgba(255, 34, 34, 0.18);
         }
 
         .sound-btn-toggle {
             background: transparent;
             border: none;
-            color: #556b99;
+            color: #888888;
             font-family: "Courier New", monospace;
             font-size: 14px;
             cursor: pointer;
@@ -253,8 +252,8 @@
         }
 
         .sound-hud-panel.is-active-sound .sound-btn-toggle {
-            color: #4da6ff;
-            text-shadow: 0 0 8px rgba(77, 166, 255, 0.6);
+            color: #ff3333;
+            text-shadow: 0 0 8px rgba(255, 51, 51, 0.6);
         }
 
         .volume-slider-box {
@@ -268,8 +267,9 @@
             appearance: none;
             width: 110px;
             height: 4px;
+            border-radius:
             border-radius: 2px;
-            background: #182238;
+            background: #252525;
             outline: none;
             cursor: pointer;
             transition: background 0.2s;
@@ -284,14 +284,14 @@
             background: #ffffff;
             cursor: pointer;
             border: 2px solid #000000;
-            box-shadow: 0 0 6px rgba(120, 190, 255, 0.5);
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
             transition: transform 0.15s, background-color 0.2s, box-shadow 0.2s;
         }
 
         .volume-slider::-webkit-slider-thumb:hover {
             transform: scale(1.25);
-            background: #4da6ff;
-            box-shadow: 0 0 10px rgba(77, 166, 255, 0.9);
+            background: #ff3333;
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.8);
         }
 
         .volume-slider::-moz-range-thumb {
@@ -301,33 +301,32 @@
             background: #ffffff;
             cursor: pointer;
             border: 2px solid #000000;
-            box-shadow: 0 0 6px rgba(120, 190, 255, 0.5);
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
             transition: transform 0.15s, background-color 0.2s, box-shadow 0.2s;
         }
 
         .volume-slider::-moz-range-thumb:hover {
             transform: scale(1.25);
-            background: #4da6ff;
-            box-shadow: 0 0 10px rgba(77, 166, 255, 0.9);
+            background: #ff3333;
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.8);
         }
 
         .sound-hud-panel.is-active-sound .volume-slider::-webkit-slider-thumb {
-            background: #4da6ff;
-            box-shadow: 0 0 8px rgba(77, 166, 255, 0.8);
+            background: #ff3333;
+            box-shadow: 0 0 8px rgba(255, 51, 51, 0.7);
         }
 
         .volume-val-label {
             font-size: 11px;
             letter-spacing: 1px;
-            color: #4a5a80;
+            color: #666666;
             min-width: 36px;
             text-align: right;
             font-variant-numeric: tabular-nums;
         }
 
         .sound-hud-panel.is-active-sound .volume-val-label {
-            color: #4da6ff;
-            text-shadow: 0 0 6px rgba(77, 166, 255, 0.4);
+            color: #ff3333;
         }
     </style>
 </head>
@@ -423,11 +422,11 @@
             if (isMuted || volPercent === 0) {
                 soundIcon.textContent = '🔇';
                 soundPanel.classList.remove('is-active-sound');
-                volumeSlider.style.background = '#182238';
+                volumeSlider.style.background = '#252525';
             } else {
                 soundIcon.textContent = volPercent > 50 ? '🔊' : '🔉';
                 soundPanel.classList.add('is-active-sound');
-                volumeSlider.style.background = 'linear-gradient(to right, #3388ff ' + volPercent + '%, #182238 ' + volPercent + '%)';
+                volumeSlider.style.background = 'linear-gradient(to right, #ff2222 ' + volPercent + '%, #252525 ' + volPercent + '%)';
             }
         }
 
@@ -520,7 +519,7 @@
             if (!message) {
                 handleTap('heavy');
                 status.innerText = ">> ВВЕДИ ТЕКСТ";
-                status.style.color = "#4da6ff";
+                status.style.color = "#ff4444";
                 return;
             }
 
@@ -528,7 +527,7 @@
             btn.disabled = true;
             btn.innerText = "[ TRANSMITTING... ]";
             status.innerText = ">> ОТПРАВКА...";
-            status.style.color = "#5577aa";
+            status.style.color = "#888";
 
             var user = getTgUser();
 
@@ -544,7 +543,7 @@
                 input.value = "";
                 btn.innerText = "[ TRANSMITTED ]";
                 status.innerText = ">> УСПЕШНО ДОСТАВЛЕНО";
-                status.style.color = "#00e5ff";
+                status.style.color = "#22ff66";
 
                 setTimeout(function() {
                     btn.disabled = false;
@@ -554,7 +553,7 @@
             }).catch(function(err) {
                 btn.disabled = false;
                 btn.innerText = "[ TRANSMIT ]";
-                status.style.color = "#ff3355";
+                status.style.color = "#ff2222";
                 status.innerText = ">> ОШИБКА: " + err.message;
             });
         }
