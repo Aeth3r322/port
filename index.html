@@ -42,48 +42,18 @@
             margin: 0 auto;
         }
 
-        /* === ЧЕРНАЯ НАДПИСЬ СО СТАТИЧНЫМ КРАСНЫМ СВЕЧЕНИЕМ НА ВСЮ ШИРИНУ КЛИПА === */
-        /* === ЧЕРНАЯ НАДПИСЬ СО СТАТИЧНЫМ СИНИМ СВЕЧЕНИЕМ ПОД КЛИП === */
-        .top-brand-label {
-            width: 500px;
-            max-width: 86vw;
-            text-align: center;
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: clamp(22px, 6.2vw, 35px);
-            font-weight: 900;
-            color: #000000;
-            text-transform: lowercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 12px;
-            line-height: 1.1;
+        .stage-title {
+            position: absolute;
+            inset: 50% auto auto 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
             white-space: nowrap;
-            /* Статичное плотное красное свечение вокруг черного текста */
-            /* Плотное сине-голубое свечение один в один как на клипе */
-            text-shadow: 
-                -1px -1px 0 #ff0000,
-                 1px -1px 0 #ff0000,
-                -1px  1px 0 #ff0000,
-                 1px  1px 0 #ff0000,
-                 0 0 4px #ff0000,
-                 0 0 8px #ff0000,
-                 0 0 12px #ff1111,
-                 0 0 18px #ff0000,
-                 0 0 26px #ff0000;
+            font: 900 clamp(22px, 6vw, 35px)/1 Arial, Helvetica, sans-serif;
+            letter-spacing: -.035em;
+            color: #70d6ff;
+            text-shadow: 0 1px 2px #07152c, 0 0 6px #0066ff, 0 0 16px #0044ff;
         }
 
-        /* === ЦЕНТРАЛЬНАЯ МЕДИА-СЦЕНА (БЕЗ СЕРЫХ ПОЛОСОК И КАРТИНОК) === */
-                -1px -1px 0 #70d6ff,
-                 1px -1px 0 #70d6ff,
-                -1px  1px 0 #70d6ff,
-                 1px  1px 0 #70d6ff,
-                 0 0 4px #70d6ff,
-                 0 0 8px #3399ff,
-                 0 0 12px #0066ff,
-                 0 0 18px #0044ff,
-                 0 0 26px #0022aa;
-        }
-
-        /* === ЦЕНТРАЛЬНАЯ МЕДИА-СЦЕНА === */
         .stage {
             display: flex;
             align-items: center;
@@ -115,11 +85,6 @@
         }
 
         @media (max-width: 850px) {
-            .top-brand-label {
-                width: 90vw;
-                max-width: 90vw;
-            }
-
             .video-box video {
                 width: 90vw;
                 max-width: 90vw;
@@ -384,15 +349,13 @@
 <body>
 
     <div class="main-wrapper">
-        <!-- НАДПИСЬ НАД КЛИПОМ -->
-        <div class="top-brand-label">chubzikпацык.xyz</div>
-
         <!-- МЕДИА-СЦЕНА -->
         <div class="stage">
             <div class="video-box" id="video-container" onclick="handleVideoClick()">
                 <video id="main-video" autoplay loop muted playsinline preload="metadata">
                     <source src="wendigo.mp4" type="video/mp4">
                 </video>
+                <h1 class="stage-title">chubzikпацык.xyz</h1>
             </div>
         </div>
 
